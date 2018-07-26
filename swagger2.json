@@ -1,0 +1,343 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"version": "1.0",
+		"title": "IOT采集中间件-设备服务",
+		"termsOfService": "http://www.cdsunrise.net",
+		"contact": {
+			"name": "Liu Wei",
+			"url": "http://www.cdsunrise.net",
+			"email": "liuwei@cdsunrise.net"
+		}
+	},
+	"host": "localhost",
+	"basePath": "/",
+	"tags": [
+		{
+			"name": "device-controller",
+			"description": "设备控制器"
+		},
+		{
+			"name": "sys-device-controller",
+			"description": "内部调用设备相关"
+		}
+	],
+	"paths": {
+		"/device/get": {
+			"get": {
+				"tags": [
+					"device-controller"
+				],
+				"summary": "查询设备详情",
+				"operationId": "getUsingGET",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*"
+				],
+				"parameters": [
+					{
+						"name": "deviceId",
+						"in": "path",
+						"description": "当前页数",
+						"required": true,
+						"type": "integer",
+						"format": "int32"
+					},
+					{
+						"name": "token",
+						"in": "header",
+						"description": "用户token",
+						"required": false,
+						"type": "string"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/Result«Device»"
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			}
+		},
+		"/sysDevice/list": {
+			"post": {
+				"tags": [
+					"sys-device-controller"
+				],
+				"summary": "查询设备列表",
+				"description": "分页查询设备信息",
+				"operationId": "listUsingPOST",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"*/*",
+					"application/json;charset=UTF-8"
+				],
+				"parameters": [
+					{
+						"name": "page",
+						"in": "path",
+						"description": "当前页数",
+						"required": true,
+						"type": "integer",
+						"format": "int32"
+					},
+					{
+						"name": "size",
+						"in": "path",
+						"description": "每页数量",
+						"required": true,
+						"type": "integer",
+						"format": "int32"
+					},
+					{
+						"in": "body",
+						"name": "paramMap",
+						"description": "查询条件",
+						"required": false,
+						"schema": {
+							"type": "object"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/Result«PageInfo«Device»»"
+						}
+					},
+					"201": {
+						"description": "Created"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"404": {
+						"description": "Not Found"
+					}
+				}
+			}
+		}
+	},
+	"definitions": {
+		"Result«Device»": {
+			"type": "object",
+			"properties": {
+				"code": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"data": {
+					"$ref": "#/definitions/Device"
+				},
+				"optionalData": {
+					"$ref": "#/definitions/Optional«Device»"
+				},
+				"resultMsg": {
+					"type": "string"
+				},
+				"success": {
+					"type": "boolean"
+				}
+			}
+		},
+		"Result«PageInfo«Device»»": {
+			"type": "object",
+			"properties": {
+				"code": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"data": {
+					"$ref": "#/definitions/PageInfo«Device»"
+				},
+				"optionalData": {
+					"$ref": "#/definitions/Optional«PageInfo«Device»»"
+				},
+				"resultMsg": {
+					"type": "string"
+				},
+				"success": {
+					"type": "boolean"
+				}
+			}
+		},
+		"Device": {
+			"type": "object",
+			"properties": {
+				"auth": {
+					"type": "boolean"
+				},
+				"createTime": {
+					"type": "string",
+					"format": "date-time"
+				},
+				"deviceName": {
+					"type": "string",
+					"example": "我是设备名称",
+					"description": "设备名称"
+				},
+				"fromSource": {
+					"type": "string"
+				},
+				"id": {
+					"type": "string",
+					"description": "这是id"
+				},
+				"iotKeyId": {
+					"type": "string"
+				},
+				"pid": {
+					"type": "string",
+					"example": "10",
+					"description": "上级父节点id"
+				},
+				"productId": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string",
+					"enum": [
+						"ONLINE",
+						"OFFLINE",
+						"NOT_ENABLED",
+						"ENABLE",
+						"DISABLE",
+						"CANCELLED"
+					]
+				},
+				"userAccessKey": {
+					"type": "string"
+				},
+				"userId": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"version": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"Optional«PageInfo«Device»»": {
+			"type": "object",
+			"properties": {
+				"present": {
+					"type": "boolean"
+				}
+			}
+		},
+		"PageInfo«Device»": {
+			"type": "object",
+			"properties": {
+				"endRow": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"firstPage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"hasNextPage": {
+					"type": "boolean"
+				},
+				"hasPreviousPage": {
+					"type": "boolean"
+				},
+				"isFirstPage": {
+					"type": "boolean"
+				},
+				"isLastPage": {
+					"type": "boolean"
+				},
+				"lastPage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"list": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/Device"
+					}
+				},
+				"navigateFirstPage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"navigateLastPage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"navigatePages": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"navigatepageNums": {
+					"type": "array",
+					"items": {
+						"type": "integer",
+						"format": "int32"
+					}
+				},
+				"nextPage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"pageNum": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"pageSize": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"pages": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"prePage": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"size": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"startRow": {
+					"type": "integer",
+					"format": "int32"
+				},
+				"total": {
+					"type": "integer",
+					"format": "int64"
+				}
+			}
+		},
+		"Optional«Device»": {
+			"type": "object",
+			"properties": {
+				"present": {
+					"type": "boolean"
+				}
+			}
+		}
+	}
+}
