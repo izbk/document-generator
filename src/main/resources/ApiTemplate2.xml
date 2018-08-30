@@ -1079,6 +1079,7 @@
 			                                <w:t>${path.method!""}</w:t>
 			                            </w:r>
 			                        </w:p>
+			                        <#if path.headerList?? && (path.headerList?size > 0) >
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>
@@ -1391,6 +1392,7 @@
 			                            </w:tr>
 										</#list>
 			                        </w:tbl>
+			                        </#if>
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>
@@ -1439,6 +1441,7 @@
 			                                <w:t>${path.consumes!""}</w:t>
 			                            </w:r>
 			                        </w:p>
+			                         <#if path.pathList?? && (path.pathList?size > 0) >
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>
@@ -1758,6 +1761,8 @@
 			                            </w:tr>
 										</#list>
 			                        </w:tbl>
+			                        </#if>
+			                        <#if path.queryList?? && (path.queryList?size > 0) >
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>
@@ -2077,6 +2082,8 @@
 			                            </w:tr>
 										</#list>
 			                        </w:tbl>
+			                        </#if>
+			                        <#if path.bodyList?? && (path.bodyList?size > 0) >
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>
@@ -2387,11 +2394,23 @@
 			                                                <w:sz-cs w:val="18"/>
 			                                            </w:rPr>
 			                                        </w:pPr>
+			                                        <w:r>
+			                                         <w:rPr>
+			                                                <w:rFonts w:ascii="宋体" w:h-ansi="宋体" w:hint="fareast"/>
+			                                                <w:i-cs/>
+			                                                <w:color w:val="000000"/>
+			                                                <w:sz w:val="18"/>
+			                                                <w:sz-cs w:val="18"/>
+			                                                <w:lang w:val="EN-US" w:fareast="ZH-CN"/>
+			                                            </w:rPr>
+			                                            <w:t>${body.remark!""}</w:t>
+			                                        </w:r>			                                        
 			                                    </w:p>
 			                                </w:tc>
 			                            </w:tr>
 										</#list>
 			                        </w:tbl>
+			                        </#if>
 			                        <w:p>
 			                            <w:pPr>
 			                                <w:rPr>

@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.swing.text.html.HTML.Tag;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -24,7 +22,6 @@ import com.besjon.pojo.Parameters;
 import com.besjon.pojo.Path;
 import com.besjon.pojo.Post;
 import com.besjon.pojo.Response;
-import com.besjon.pojo.Schema;
 import com.besjon.pojo.Tags;
 
 import db.utils.FtUtil;
@@ -66,6 +63,7 @@ public class SwaggerApi2Word {
 	private static final String RESULT_DATA_NAME = "name";
 	private static final String RESULT_DATA_DESC = "description";
 	private static final String RESULT_DATA_TYPE = "type";
+	private static final String RESULT_DATA_REMARK = "remark";
 	/**
 	 * 模板参数
 	 */
@@ -90,11 +88,10 @@ public class SwaggerApi2Word {
 
 	public static void createDoc2() throws Exception {
 		List<Map<String, List<Map<String, Object>>>> dataList = new ArrayList<>();
-		File file = new File("swagger.json");
-		InputStream inputStream = new FileInputStream(file);
-		// HttpURLConnection connection =
-		// HTTPUtils.getConnection("http://127.0.0.1:8081/v2/api-docs");
-		// InputStream inputStream = connection.getInputStream();
+//		File file = new File("swagger.json");
+//		InputStream inputStream = new FileInputStream(file);
+		HttpURLConnection connection = HTTPUtils.getConnection("http://127.0.0.1:8083/v2/api-docs");
+		InputStream inputStream = connection.getInputStream();
 		JsonRootBean root = JSON.parseObject(inputStream, JsonRootBean.class, Feature.DisableCircularReferenceDetect);
 		List<Tags> tags = root.getTags();
 		List<Map<String, Path>> paths = root.getPaths();
@@ -260,8 +257,8 @@ public class SwaggerApi2Word {
 	/**
 	 * 生成body数据列表
 	 *
-	 * @Title buildBodyList   
-	 * @Description   
+	 * @Title buildBodyList
+	 * @Description
 	 * @param definitions
 	 * @param bodyList
 	 * @return
@@ -283,14 +280,16 @@ public class SwaggerApi2Word {
 			} else {
 				String ref = schema.get(JSON_REF_KEY);
 				if (ref != null || ref != "") {
-					ref = ref.replaceAll("#/definitions/", "").replaceAll("<", "[").replaceAll(">", "]");
-					if (bodyData == null || bodyData.isEmpty()) {
-						List<Map<String, String>> bodyData2 = new ArrayList<>();
+					ref = upperCaseFirst(ref.replaceAll("#/definitions/", "").replaceAll("<", "[").replaceAll(">", "]"));
+					if (isJavaType(ref)) {
 						Map<String, String> map = new HashMap<>();
 						map.put(RESULT_DATA_NAME, bodyParam.getName());
 						map.put(RESULT_DATA_DESC, bodyParam.getDescription());
 						map.put(RESULT_DATA_TYPE, ref);
-						bodyData2.add(map);
+						map.put(RESULT_DATA_REMARK, "必填项");
+						bodyData.add(map);
+					}else {
+						bodyData = buildBodyList(definitions, ref);
 					}
 				}
 			}
@@ -298,6 +297,50 @@ public class SwaggerApi2Word {
 		return bodyData;
 	}
 
+	private static boolean isJavaType(String ref) {
+		return ref.equals("String")||ref.equals("Integer")||ref.equals("Long");
+	}
+
+	/**
+	 * 生成返回数据列表
+	 *
+	 * @Title buildResultList
+	 * @Description
+	 * @param definitions
+	 * @param refKey
+	 * @return
+	 *
+	 */
+	private static List<Map<String, String>> buildBodyList(List<Map<String, Object>> definitions, String refKey) {
+		List<Map<String, String>> resultList = new ArrayList<>();
+		for (Map<String, Object> def : definitions) {
+			Object object = def.get(refKey);
+			if (object instanceof Map) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> dataMap = (Map<String, Object>) object;
+				Object prop = dataMap.get(DEFINITIONS_PROP);
+				if (prop instanceof JSONObject) {
+					JSONObject jsonProp = (JSONObject) prop;
+					Map<String, Map<String, Object>> propMap = jsonProp
+							.toJavaObject(new TypeReference<Map<String, Map<String, Object>>>() {
+							});
+					for (Map.Entry<String, Map<String, Object>> entry : propMap.entrySet()) {
+						String key = entry.getKey();
+						Map<String, Object> value = entry.getValue();
+						String propType = upperCaseFirst((String) value.get(DEFINITIONS_PROP_TYPE));
+						String propDesc = upperCaseFirst((String) value.get(DEFINITIONS_PROP_DESC));
+						
+						Map<String, String> result = new HashMap<>();
+						result.put(RESULT_DATA_NAME, key);
+						result.put(RESULT_DATA_DESC, propDesc);
+						result.put(RESULT_DATA_TYPE, propType);
+						resultList.add(result);
+					}
+				}
+			}
+		}
+		return resultList;
+	}
 	/**
 	 * 生成返回数据列表
 	 *
