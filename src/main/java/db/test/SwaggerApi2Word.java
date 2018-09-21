@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.parser.Feature;
@@ -54,6 +55,7 @@ public class SwaggerApi2Word {
 	/**
 	 * 自定义类型
 	 */
+	private static final String DEFINITIONS_REQUIRED = "required";
 	private static final String DEFINITIONS_PROP = "properties";
 	private static final String DEFINITIONS_PROP_TYPE = "type";
 	private static final String DEFINITIONS_PROP_DESC = "description";
@@ -280,7 +282,8 @@ public class SwaggerApi2Word {
 			} else {
 				String ref = schema.get(JSON_REF_KEY);
 				if (ref != null || ref != "") {
-					ref = upperCaseFirst(ref.replaceAll("#/definitions/", "").replaceAll("<", "[").replaceAll(">", "]"));
+					ref = upperCaseFirst(
+							ref.replaceAll("#/definitions/", "").replaceAll("<", "[").replaceAll(">", "]"));
 					if (isJavaType(ref)) {
 						Map<String, String> map = new HashMap<>();
 						map.put(RESULT_DATA_NAME, bodyParam.getName());
@@ -288,7 +291,7 @@ public class SwaggerApi2Word {
 						map.put(RESULT_DATA_TYPE, ref);
 						map.put(RESULT_DATA_REMARK, "必填项");
 						bodyData.add(map);
-					}else {
+					} else {
 						bodyData = buildBodyList(definitions, ref);
 					}
 				}
@@ -298,7 +301,7 @@ public class SwaggerApi2Word {
 	}
 
 	private static boolean isJavaType(String ref) {
-		return ref.equals("String")||ref.equals("Integer")||ref.equals("Long");
+		return ref.equals("String") || ref.equals("Integer") || ref.equals("Long");
 	}
 
 	/**
@@ -318,6 +321,13 @@ public class SwaggerApi2Word {
 			if (object instanceof Map) {
 				@SuppressWarnings("unchecked")
 				Map<String, Object> dataMap = (Map<String, Object>) object;
+				Object required = dataMap.get(DEFINITIONS_REQUIRED);
+				List<String> requiredList = null;
+				if (required instanceof JSONArray) {
+					JSONArray requiredProp = (JSONArray) required;
+					requiredList = requiredProp.toJavaObject(new TypeReference<List<String>>() {
+					});
+				}
 				Object prop = dataMap.get(DEFINITIONS_PROP);
 				if (prop instanceof JSONObject) {
 					JSONObject jsonProp = (JSONObject) prop;
@@ -329,11 +339,18 @@ public class SwaggerApi2Word {
 						Map<String, Object> value = entry.getValue();
 						String propType = upperCaseFirst((String) value.get(DEFINITIONS_PROP_TYPE));
 						String propDesc = upperCaseFirst((String) value.get(DEFINITIONS_PROP_DESC));
-						
+
 						Map<String, String> result = new HashMap<>();
 						result.put(RESULT_DATA_NAME, key);
 						result.put(RESULT_DATA_DESC, propDesc);
 						result.put(RESULT_DATA_TYPE, propType);
+						if (requiredList != null) {
+							for (String requiredKey : requiredList) {
+								if (requiredKey.equals(key)) {
+									result.put(RESULT_DATA_REMARK, "必填项");
+								}
+							}
+						}
 						resultList.add(result);
 					}
 				}
@@ -341,6 +358,7 @@ public class SwaggerApi2Word {
 		}
 		return resultList;
 	}
+
 	/**
 	 * 生成返回数据列表
 	 *

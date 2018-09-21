@@ -28,9 +28,20 @@
 		    <artifactId>fastjson</artifactId>
 		    <version>1.2.47</version>
 		</dependency>
-        
     </dependencies>
     <build>
         <finalName>db-generator</finalName>
+        <plugins>
+            <!-- 编译插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <compilerVersion>${java.version}</compilerVersion>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>
